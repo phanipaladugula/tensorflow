@@ -672,6 +672,7 @@ cc_library(
     hdrs = ["indexing_test_utils.h"],
     deps = [
         ":indexing_analysis",
+        ":symbolic_expr",
         "//xla:status_macros",
         "//xla/hlo/ir:hlo",
         "//xla/hlo/testlib:hlo_hardware_independent_test_base",

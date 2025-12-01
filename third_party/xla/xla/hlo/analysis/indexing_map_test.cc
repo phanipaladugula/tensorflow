@@ -45,6 +45,7 @@ using ::testing::ElementsAre;
 
 class IndexingMapTest : public HloHardwareIndependentTestBase {
  public:
+  IndexingMapTest() { RegisterSymbolicExprStorage(&mlir_context_); }
   IndexingMap Parse(absl::string_view indexing_map_str) {
     auto indexing_map = ParseIndexingMap(indexing_map_str, &mlir_context_);
     EXPECT_TRUE(indexing_map.has_value());
