@@ -141,9 +141,9 @@ def workspace():
         tf_http_archive(
             name = "rules_ml_toolchain",
             sha256 = "d04b4834f9a6f2333c2549300abe5478b1cde3aac18385323173a646b409a5f0",
-            strip_prefix = "rules_ml_toolchain-7e588e5b21e91bce5c3b9786e177c2579330b9aa",
+            strip_prefix = "rules_ml_toolchain-88733d0f47d576d935bda43e70c3e00c64ac3d0b",
             urls = tf_mirror_urls(
-                "https://github.com/google-ml-infra/rules_ml_toolchain/archive/7e588e5b21e91bce5c3b9786e177c2579330b9aa.tar.gz",
+                "https://github.com/yuriivcs/rules_ml_toolchain/archive/88733d0f47d576d935bda43e70c3e00c64ac3d0b.tar.gz",
             ),
         )
 
