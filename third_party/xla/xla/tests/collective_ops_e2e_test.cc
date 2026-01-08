@@ -48,8 +48,6 @@ limitations under the License.
 #include "xla/service/computation_placer.h"
 #include "xla/service/gpu/backend_configs.pb.h"
 #include "xla/service/hlo_module_config.h"
-#include "xla/service/hlo_runner.h"
-#include "xla/service/hlo_runner_interface.h"
 #include "xla/service/pattern_matcher.h"
 #include "xla/stream_executor/cuda/cuda_compute_capability.h"
 #include "xla/stream_executor/device_description.h"
@@ -1679,12 +1677,15 @@ ENTRY entry {
 )";
 
   const int64_t kNumReplicas = 1;
-  ASSERT_GE(hlo_runner_->device_count(), kNumReplicas)
-      << "Test requires at least " << kNumReplicas << " devices ("
-      << hlo_runner_->device_count() << " available)";
+  const int64_t kNumPartitions = 4;
+  if (hlo_runner_->device_count() < kNumReplicas * kNumPartitions) {
+    GTEST_SKIP() << "Test requires at least " << kNumReplicas * kNumPartitions
+                 << " devices (" << hlo_runner_->device_count()
+                 << " available)";
+  }
 
-  HloModuleConfig config =
-      GetModuleConfigForTest(/*replica_count=*/kNumReplicas);
+  HloModuleConfig config = GetModuleConfigForTest(
+      /*replica_count=*/kNumReplicas, /*num_partitions=*/kNumPartitions);
   auto opts = GetDebugOptionsForTest();
   opts.set_xla_gpu_enable_triton_gemm(false);
   CollectiveOpsVerifyF8Matmul(kModuleReplicatedStr, opts);
@@ -2024,9 +2025,14 @@ ENTRY entry {
 
   const int64_t kNumReplicas = 1;
   const int64_t kNumPartitions = 4;
+  if (hlo_runner_->device_count() < kNumReplicas * kNumPartitions) {
+    GTEST_SKIP() << "Test requires at least " << kNumReplicas * kNumPartitions
+                 << " devices (" << hlo_runner_->device_count()
+                 << " available)";
+  }
 
-  HloModuleConfig config =
-      GetModuleConfigForTest(/*replica_count=*/kNumReplicas);
+  HloModuleConfig config = GetModuleConfigForTest(
+      /*replica_count=*/kNumReplicas, /*num_partitions=*/kNumPartitions);
   config.set_num_partitions(kNumPartitions);
   TF_ASSERT_OK_AND_ASSIGN(
       auto module, ParseAndReturnVerifiedModule(kModuleReplicatedStr, config));
@@ -2056,20 +2062,20 @@ ENTRY entry {
 )";
 
   const int64_t kNumReplicas = 1;
-
-  ASSERT_GE(hlo_runner_->device_count(), kNumReplicas)
-      << "Test requires at least " << kNumReplicas << " devices ("
-      << hlo_runner_->device_count() << " available)";
   const int64_t kNumPartitions = 4;
+  if (hlo_runner_->device_count() < kNumReplicas * kNumPartitions) {
+    GTEST_SKIP() << "Test requires at least " << kNumReplicas * kNumPartitions
+                 << " devices (" << hlo_runner_->device_count()
+                 << " available)";
+  }
 
-  HloModuleConfig config =
-      GetModuleConfigForTest(/*replica_count=*/kNumReplicas);
+  HloModuleConfig config = GetModuleConfigForTest(
+      /*replica_count=*/kNumReplicas, /*num_partitions=*/kNumPartitions);
 
   auto opts = GetDebugOptionsForTest();
   opts.set_xla_ignore_channel_id(true);
   config.set_debug_options(opts);
 
-  config.set_num_partitions(kNumPartitions);
   TF_ASSERT_OK_AND_ASSIGN(
       auto module, ParseAndReturnVerifiedModule(kModuleReplicatedStr, config));
 
