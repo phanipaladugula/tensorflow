@@ -26,6 +26,28 @@ limitations under the License.
 
 namespace xla {
 
+// Copy original arrays in the source original value to the destination
+// original value according to the given mapping of old to new tuple indices.
+template <typename T>
+std::enable_if_t<std::is_integral_v<T>> CopyOriginalValue(
+    const std::shared_ptr<OriginalValue>& src_original_value,
+    const std::shared_ptr<OriginalValue>& dest_original_value,
+    const absl::flat_hash_map<T, T>& old_to_new_tuple_idx) {
+  if (!src_original_value || !dest_original_value) {
+    return;
+  }
+  const int64_t src_tuple_size = src_original_value->tree().num_leaves();
+  const int64_t dest_tuple_size = old_to_new_tuple_idx.size();
+  for (const auto& [old_idx, new_idx] : old_to_new_tuple_idx) {
+    if (old_idx < 0 || old_idx >= src_tuple_size || new_idx < 0 ||
+        new_idx >= dest_tuple_size) {
+      return;
+    }
+    dest_original_value->mutable_tree()->CopySubtreeFrom(
+        src_original_value->tree(), {old_idx}, {new_idx});
+  }
+}
+
 // Copies the original value of the source to the destination instruction.
 // Original arrays in the source original value are rearranged in the new
 // original value according to the given mapping of old to new tuple indices.
@@ -33,23 +55,16 @@ template <typename T>
 std::enable_if_t<std::is_integral_v<T>> CopyOriginalValue(
     const HloInstruction* src_instruction, HloInstruction* dest_instruction,
     const absl::flat_hash_map<T, T>& old_to_new_tuple_idx) {
-  std::shared_ptr<OriginalValue> old_original_value =
+  const std::shared_ptr<OriginalValue> old_original_value =
       src_instruction->original_value();
   if (!old_original_value) {
     return;
   }
-  const int64_t src_tuple_size = old_original_value->tree().num_leaves();
-  const int64_t dest_tuple_size = old_to_new_tuple_idx.size();
   std::shared_ptr<xla::OriginalValue> new_original_value =
       std::make_shared<xla::OriginalValue>(dest_instruction->shape());
-  for (const auto& [old_idx, new_idx] : old_to_new_tuple_idx) {
-    if (old_idx < 0 || old_idx >= src_tuple_size || new_idx < 0 ||
-        new_idx >= dest_tuple_size) {
-      return;
-    }
-    new_original_value->mutable_tree()->CopySubtreeFrom(
-        old_original_value->tree(), {old_idx}, {new_idx});
-  }
+
+  CopyOriginalValue(old_original_value, new_original_value,
+                    old_to_new_tuple_idx);
   dest_instruction->set_original_value(new_original_value);
 }
 
