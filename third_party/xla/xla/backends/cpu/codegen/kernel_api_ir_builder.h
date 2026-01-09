@@ -30,6 +30,7 @@ limitations under the License.
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
 #include "llvm/IR/Value.h"
+#include "xla/codegen/kernel_spec.h"
 #include "xla/hlo/ir/hlo_instruction.h"
 #include "xla/service/buffer_assignment.h"
 #include "xla/service/hlo_module_config.h"
@@ -83,10 +84,7 @@ class KernelApiIrBuilder {
   // Kernel parameter (argument or result buffer) passed to a kernel function.
   // We rely on buffer allocation slice information to infer buffer aliasing
   // scopes for LLVM codegen.
-  struct KernelParameter {
-    Shape shape;
-    BufferAllocation::Slice slice;
-  };
+  using KernelParameter = xla::ShapedSlice;
 
   // A kernel function prototype with all the LLVM values that might be needed
   // to emit the actual kernel body.
@@ -110,8 +108,8 @@ class KernelApiIrBuilder {
 
     // The set of buffers used by this kernel, can be empty if buffer assignment
     // was not provided.
-    absl::InlinedVector<BufferAllocation::Slice, 8> argument_buffers;
-    absl::InlinedVector<BufferAllocation::Slice, 8> result_buffers;
+    absl::InlinedVector<KernelParameter, 4> argument_buffers;
+    absl::InlinedVector<KernelParameter, 4> result_buffers;
   };
 
   KernelApiIrBuilder(

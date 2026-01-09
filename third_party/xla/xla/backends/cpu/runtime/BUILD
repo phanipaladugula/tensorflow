@@ -158,9 +158,9 @@ tf_proto_library(
         "//xla:xla_data_proto",
         "//xla/backends/cpu:xnn_fusion_options_proto",
         "//xla/backends/cpu:ynn_fusion_options_proto",
+        "//xla/backends/gpu/runtime:shaped_slice_proto",
         "//xla/service:buffer_assignment_proto",
         "//xla/service:hlo_proto",
-        "@com_google_protobuf//:any_proto",
     ],
 )
 

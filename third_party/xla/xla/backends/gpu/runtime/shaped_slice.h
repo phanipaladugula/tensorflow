@@ -50,6 +50,11 @@ struct ShapedSlice {
     absl::Format(&sink, "ShapedSlice{slice: %v, shape: %v}", shaped_slice.slice,
                  shaped_slice.shape.ToString(/*print_layout=*/true));
   }
+
+  template <typename H>
+  friend H AbslHashValue(H h, const ShapedSlice& t) {
+    return H::combine(std::move(h), t.slice, t.shape);
+  }
 };
 
 // A nullable shaped slice is either a ShapedSlice or a nullopt. This is used

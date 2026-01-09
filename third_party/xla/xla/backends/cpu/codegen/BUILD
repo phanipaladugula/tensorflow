@@ -452,6 +452,7 @@ cc_library(
         "//xla:shape_util",
         "//xla:util",
         "//xla/backends/cpu:alignment",
+        "//xla/codegen:kernel_spec",
         "//xla/hlo/ir:hlo",
         "//xla/service:buffer_assignment",
         "//xla/service:hlo_module_config",

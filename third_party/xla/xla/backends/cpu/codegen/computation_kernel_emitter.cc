@@ -76,7 +76,7 @@ absl::Status GetInstructionSlices(
   if (slice.allocation()->is_thread_local()) {
     return absl::OkStatus();
   }
-  parameters.insert({shape, std::move(slice)});
+  parameters.insert({std::move(slice), shape});
 
   if (shape.IsTuple()) {
     for (const auto& [leaf_index, leaf_shape] :
@@ -84,7 +84,7 @@ absl::Status GetInstructionSlices(
       TF_ASSIGN_OR_RETURN(
           BufferAllocation::Slice leaf_slice,
           buffer_assignment->GetUniqueSlice(instruction, {leaf_index}));
-      parameters.insert({leaf_shape, std::move(leaf_slice)});
+      parameters.insert({std::move(leaf_slice), leaf_shape});
     }
   }
   return absl::OkStatus();
@@ -182,18 +182,18 @@ ComputationKernelEmitter::EmitKernelDefinition() {
       slice_to_buffer_table_index;
 
   int64_t buffer_table_index = 0;
-  for (const auto& [array, slice] : llvm::zip(
+  for (const auto& [array, arg] : llvm::zip(
            kernel_prototype.arguments, kernel_prototype.argument_buffers)) {
     int64_t index = buffer_table_index++;
-    slice_to_buffer_table_index[slice] = index;
+    slice_to_buffer_table_index[arg.slice] = index;
     llvm::Value* buffer_table_ptr = llvm_ir::EmitBufferIndexingGEP(
         buffer_table, ir_builder.getPtrTy(), index, &ir_builder);
     ir_builder.CreateStore(array.GetBasePointer(), buffer_table_ptr);
   }
-  for (const auto& [array, slice] :
+  for (const auto& [array, result] :
        llvm::zip(kernel_prototype.results, kernel_prototype.result_buffers)) {
     int64_t index = buffer_table_index++;
-    slice_to_buffer_table_index[slice] = index;
+    slice_to_buffer_table_index[result.slice] = index;
     llvm::Value* buffer_table_ptr = llvm_ir::EmitBufferIndexingGEP(
         buffer_table, ir_builder.getPtrTy(), index, &ir_builder);
     ir_builder.CreateStore(array.GetBasePointer(), buffer_table_ptr);

@@ -284,7 +284,7 @@ KernelApiIrBuilder::GetKernelArgumentsParameters(
       TF_ASSIGN_OR_RETURN(
           BufferAllocation::Slice slice,
           GetUniqueSlice(buffer_assignment, operand, indexed.index));
-      arguments.push_back(KernelParameter{indexed.shape, slice});
+      arguments.push_back(KernelParameter{slice, indexed.shape});
     }
   }
   return arguments;
@@ -299,7 +299,7 @@ KernelApiIrBuilder::GetKernelResultsParameters(
     TF_ASSIGN_OR_RETURN(
         BufferAllocation::Slice slice,
         GetUniqueSlice(buffer_assignment, instruction, indexed.index));
-    results.push_back(KernelParameter{indexed.shape, slice});
+    results.push_back(KernelParameter{slice, indexed.shape});
   }
   return results;
 }
@@ -437,16 +437,6 @@ auto KernelApiIrBuilder::EmitKernelPrototype(
   b.CreateRet(
       llvm::ConstantPointerNull::get(llvm::PointerType::getUnqual(context_)));
 
-  absl::InlinedVector<BufferAllocation::Slice, 8> argument_buffers;
-  for (const KernelParameter& argument : arguments) {
-    argument_buffers.push_back(argument.slice);
-  }
-
-  absl::InlinedVector<BufferAllocation::Slice, 8> result_buffers;
-  for (const KernelParameter& result : results) {
-    result_buffers.push_back(result.slice);
-  }
-
   return KernelPrototype{function,
                          return_block,
                          kernel_workgroup_dim,
@@ -454,8 +444,8 @@ auto KernelApiIrBuilder::EmitKernelPrototype(
                          std::move(ir_arguments),
                          std::move(ir_results),
                          std::move(invariant_arguments),
-                         std::move(argument_buffers),
-                         std::move(result_buffers)};
+                         {arguments.begin(), arguments.end()},
+                         {results.begin(), results.end()}};
 }
 
 absl::StatusOr<std::string> KernelApiIrBuilder::GetKernelName(
