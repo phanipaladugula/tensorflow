@@ -340,6 +340,9 @@ std::ostream& operator<<(std::ostream& out, const AxisRef& axis) {
 }
 
 bool AxesCanCoexistWithoutOverlap(absl::Span<const AxisRef> axes) {
+  if (axes.empty()) {
+    return true;
+  }
   for (int64_t i = 0; i < axes.size() - 1; ++i) {
     for (int64_t j = i + 1; j < axes.size(); ++j) {
       if (!axes[i].CanCoexistWithoutOverlap(axes[j])) {
