@@ -227,6 +227,11 @@ class SocketListener::Handler : public PollEventLoop::Handler {
   }
 
   void Shutdown() {
+    std::shared_ptr<AcceptHandler> on_accept;
+    {
+      absl::MutexLock l(mu_);
+      std::swap(on_accept, on_accept_);
+    }
     auto* l = loop();
     shutdown_requested_.store(true);
     l->SendWake(this);
