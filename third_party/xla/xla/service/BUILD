@@ -6395,3 +6395,43 @@ xla_cc_test(
 )
 
 exports_files(["xla_aot_compile_test_gpu_target_config.txtpb"])
+
+cc_library(
+    name = "shaped_slice",
+    srcs = ["shaped_slice.cc"],
+    hdrs = ["shaped_slice.h"],
+    deps = [
+        "//xla:shape_util",
+        "//xla/service:buffer_assignment",
+        "//xla/service:shaped_slice_proto_cc",
+        "//xla/tsl/platform:statusor",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/types:span",
+    ],
+)
+
+xla_cc_test(
+    name = "shaped_slice_test",
+    srcs = ["shaped_slice_test.cc"],
+    deps = [
+        ":buffer_assignment",
+        "//xla:shape_util",
+        "//xla:xla_data_proto_cc",
+        "//xla/backends/gpu/runtime:shaped_slice",
+        "//xla/service:shaped_slice_proto_cc",
+        "//xla/tsl/util/proto:parse_text_proto",
+        "//xla/tsl/util/proto:proto_matchers",
+        "@com_google_absl//absl/status:status_matchers",
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+tf_proto_library(
+    name = "shaped_slice_proto",
+    srcs = ["shaped_slice.proto"],
+    deps = [
+        "//xla:xla_data_proto",
+        "//xla/service:buffer_assignment_proto",
+    ],
+)

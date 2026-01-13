@@ -23,9 +23,9 @@ limitations under the License.
 #include <gtest/gtest.h>
 #include "absl/status/status_matchers.h"
 #include "absl/strings/str_cat.h"
-#include "xla/backends/gpu/runtime/shaped_slice.pb.h"
 #include "xla/primitive_util.h"
 #include "xla/service/buffer_assignment.h"
+#include "xla/service/shaped_slice.pb.h"
 #include "xla/shape_util.h"
 #include "xla/tsl/util/proto/parse_text_proto.h"
 #include "xla/tsl/util/proto/proto_matchers.h"
