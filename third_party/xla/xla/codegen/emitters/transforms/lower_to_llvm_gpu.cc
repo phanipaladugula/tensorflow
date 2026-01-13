@@ -50,6 +50,7 @@ limitations under the License.
 #include "google/protobuf/text_format.h"
 #include "xla/codegen/device_spec.h"
 #include "xla/codegen/emitters/transforms/lower_to_llvm_common.h"
+#include "xla/codegen/emitters/transforms/lowering_utils.h"
 #include "xla/stream_executor/device_description.h"
 #include "xla/stream_executor/device_description.pb.h"
 #include "xla/tsl/platform/logging.h"
@@ -125,6 +126,11 @@ class LowerToLLVMGPUPass
 
     if (mlir::failed(LowerToLLVM(getOperation(), populate_patterns))) {
       signalPassFailure();
+      return;
+    }
+
+    if (device_spec_.IsAmdGpu()) {
+      EnsureAMDGPUAllocasUseAS5(getOperation());
     }
   }
 
